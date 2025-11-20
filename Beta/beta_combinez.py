@@ -1,0 +1,78 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import caesar
+from beta_utils import Calbeta, bin_beta  # assuming your functions are in beta_utils.py
+
+# -------------------------------
+# File lists for each box (sorted by redshift)
+# -------------------------------
+files_25 = sorted([
+    '/cosma8/data/dp376/dc-xian3/simba-eor/EoRData/CaesarFile/m25n1024/' + f
+    for f in ['caesar_m25n1024_016.hdf5', 'caesar_m25n1024_019.hdf5',
+              'caesar_m25n1024_022.hdf5', 'caesar_m25n1024_026.hdf5',
+              'caesar_m25n1024_030.hdf5', 'caesar_m25n1024_036.hdf5']
+])
+
+files_50 = sorted([
+    '/cosma8/data/dp376/dc-xian3/simba-eor/EoRData/CaesarFile/m50n1024/' + f
+    for f in ['caesar_m50n1024_016.hdf5', 'caesar_m50n1024_019.hdf5',
+              'caesar_m50n1024_022.hdf5', 'caesar_m50n1024_026.hdf5',
+              'caesar_m50n1024_030.hdf5', 'caesar_m50n1024_036.hdf5']
+])
+
+# -------------------------------
+# Bands and wavelengths
+# -------------------------------
+bands = ["i1500", "i2300", "i2800"]
+wavelengths = np.array([1500, 2300, 2800])
+
+# -------------------------------
+# Plot setup: 3x2 subplots
+# -------------------------------
+fig, axes = plt.subplots(3, 2, figsize=(12, 12), sharex=True, sharey=True)
+axes = axes.flatten()
+
+# -------------------------------
+# Loop over redshifts
+# -------------------------------
+for i, (f25, f50) in enumerate(zip(files_25, files_50)):
+    ax = axes[i]
+
+    # Load Caesar files
+    obj_25 = caesar.load(f25)
+    obj_50 = caesar.load(f50)
+
+    # Dust magnitudes
+    mags_25 = np.array([[g.absmag[band] for g in obj_25.galaxies] for band in bands])
+    mags_50 = np.array([[g.absmag[band] for g in obj_50.galaxies] for band in bands])
+
+    # Combine boxes
+    mags_combined = np.concatenate([mags_25, mags_50], axis=1)
+
+    # Compute beta
+    beta_combined = Calbeta(mags_combined, wavelengths)
+    M1500_combined = mags_combined[0]
+
+    # Bin beta
+    bin_centers, beta_mean, beta_std = bin_beta(M1500_combined, beta_combined, N_bins=10, mag_cut=-16)
+
+    # Plot all curves in green
+    ax.errorbar(bin_centers, beta_mean, yerr=beta_std,
+                color='green', marker='o', linestyle='-')
+    
+    # Titles and axis limits
+    z = obj_25.simulation.redshift
+    ax.set_title(f"z = {round(z)}", fontsize=12)
+    ax.set_xlim(-23, -15)
+    ax.set_ylim(-2.6, -0.8)
+    if i // 2 == 2:  # bottom row
+        ax.set_xlabel("M1500")
+    if i % 2 == 0:   # left column
+        ax.set_ylabel("Beta")
+
+# -------------------------------
+# Final layout
+# -------------------------------
+plt.tight_layout()
+plt.savefig("Beta_combined_subplots.png")
+
