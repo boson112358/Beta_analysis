@@ -23,8 +23,15 @@ wavelengths = np.array([1500, 2300, 2800])
 mags_m25 = np.array([[g.absmag[band] for g in obj.galaxies] for band in bands])
 mags_m50 = np.array([[g.absmag[band] for g in obj_m50.galaxies] for band in bands])
 
+# --- Apply magnitude cuts ---
+mask_m25 = mags_m25[0] < -16       # only keep galaxies with M1500 < -16
+mask_m50 = mags_m50[0] < -17.5     # only keep galaxies with M1500 < -17.5
+
+mags_m25_cut = mags_m25[:, mask_m25]
+mags_m50_cut = mags_m50[:, mask_m50]
+
 # --- Combine the two boxes ---
-mags_combined = np.concatenate([mags_m25, mags_m50], axis=1)
+mags_combined = np.concatenate([mags_m25_cut, mags_m50_cut], axis=1)
 
 # --- Compute beta ---
 beta_combined = Calbeta(mags_combined, wavelengths)

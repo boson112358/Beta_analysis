@@ -46,8 +46,15 @@ for i, (f25, f50) in enumerate(zip(files_25, files_50)):
     mags_25 = np.array([[g.absmag[band] for g in obj_25.galaxies] for band in bands])
     mags_50 = np.array([[g.absmag[band] for g in obj_50.galaxies] for band in bands])
 
-    # Combine boxes
-    mags_combined = np.concatenate([mags_25, mags_50], axis=1)
+    # --- Apply magnitude cuts ---
+    mask_m25 = mags_25[0] < -16       # only keep galaxies with M1500 < -16
+    mask_m50 = mags_50[0] < -17.5     # only keep galaxies with M1500 < -17.5
+
+    mags_m25_cut = mags_25[:, mask_m25]
+    mags_m50_cut = mags_50[:, mask_m50]
+
+    # --- Combine the two boxes ---
+    mags_combined = np.concatenate([mags_m25_cut, mags_m50_cut], axis=1)
 
     # Compute beta
     beta_combined = Calbeta(mags_combined, wavelengths)
