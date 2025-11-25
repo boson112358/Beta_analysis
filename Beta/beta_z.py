@@ -25,7 +25,7 @@ colors = {'25': 'blue', '50': 'red'}
 # Parameters
 bands = ["i1500", "i2300", "i2800"]
 wavelengths = np.array([1500, 2300, 2800])
-N_bins = 10
+N_bins = 6
 
 # Create 2x3 subplots (6 snapshots)
 fig, axes = plt.subplots(3, 2, figsize=(12, 16))

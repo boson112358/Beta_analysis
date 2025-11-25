@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import caesar
-from beta_utils import Calbeta, bin_beta  # assuming your functions are in beta_utils.py
+from beta_utils import *
 
 # -------------------------------
 # File lists for each box (sorted by redshift)
@@ -61,17 +61,30 @@ for i, (f25, f50) in enumerate(zip(files_25, files_50)):
     M1500_combined = mags_combined[0]
 
     # Bin beta
-    bin_centers, beta_mean, beta_std = bin_beta(M1500_combined, beta_combined, N_bins=6, mag_cut=-16)
+    bin_centers, beta_mean, beta_std, bin_count = bin_beta(M1500_combined, beta_combined, N_bins=6, mag_cut=-16, min_count=5)
+
+    # --- Linear Regression ---
+    slope, intercept, x_fit, y_fit = linear_regression_fit(bin_centers, beta_mean, beta_std)
+
+    # Optional: round for nicer display
+    slope_rounded = round(slope, 3)
+    intercept_rounded = round(intercept, 3)
 
     # Plot all curves in green
     ax.errorbar(bin_centers, beta_mean, yerr=beta_std,
                 color='green', marker='o', linestyle='-')
+    ax.plot(x_fit, y_fit, label=f"y = {slope_rounded}x + {intercept_rounded}")
+    
+    # Annotate number of galaxies in each bin
+    for x, y, count in zip(bin_centers, beta_mean, bin_count):
+        ax.text(x, y + 0.05, str(count), fontsize=8, ha='center', color='blue')
     
     # Titles and axis limits
     z = obj_25.simulation.redshift
     ax.set_title(f"z = {round(z)}", fontsize=12)
     ax.set_xlim(-23, -15)
     ax.set_ylim(-2.6, -0.8)
+    ax.legend(fontsize=10)
     if i // 2 == 2:  # bottom row
         ax.set_xlabel("M1500")
     if i % 2 == 0:   # left column
@@ -81,5 +94,5 @@ for i, (f25, f50) in enumerate(zip(files_25, files_50)):
 # Final layout
 # -------------------------------
 plt.tight_layout()
-plt.savefig("Beta_combined_subplots.png")
+plt.savefig("Beta_combined_subplots_lr.png")
 

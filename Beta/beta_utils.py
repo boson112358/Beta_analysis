@@ -1,4 +1,5 @@
 import numpy as np
+import statsmodels.api as sm
 
 def Calbeta(magnitudes, wavelengths):
     loglambda = np.log10(wavelengths)
@@ -6,9 +7,10 @@ def Calbeta(magnitudes, wavelengths):
     slope = np.polyfit(loglambda, logflux, 1)[0]
     return slope - 2
 
-def bin_beta(M1500, beta, N_bins=20, mag_cut=-16):
+def bin_beta(M1500, beta, N_bins=20, mag_cut=-16, min_count=10):
     """
     Bin galaxies by M1500 and compute mean and std of beta in each bin.
+    Bins with fewer than min_count galaxies are discarded.
 
     Parameters
     ----------
@@ -20,6 +22,8 @@ def bin_beta(M1500, beta, N_bins=20, mag_cut=-16):
         Number of bins. Default is 20.
     mag_cut : float, optional
         Only include galaxies with M1500 < mag_cut. Default is -16.
+    min_count : int, optional
+        Minimum number of galaxies in a bin to keep it. Default is 10.
 
     Returns
     -------
@@ -29,6 +33,8 @@ def bin_beta(M1500, beta, N_bins=20, mag_cut=-16):
         Mean beta in each bin.
     beta_std : ndarray
         Standard deviation of beta in each bin.
+    bin_count : ndarray
+        Number of galaxies in each bin.
     """
     # Mask galaxies
     mask = M1500 < mag_cut
@@ -45,8 +51,10 @@ def bin_beta(M1500, beta, N_bins=20, mag_cut=-16):
     # Compute mean and std per bin
     beta_mean = []
     beta_std  = []
+    bin_count = []
     for i in range(1, N_bins + 1):
         in_bin = beta_sel[bin_index == i]
+        bin_count.append(len(in_bin))
         if len(in_bin) > 0:
             beta_mean.append(in_bin.mean())
             beta_std.append(in_bin.std())
@@ -54,7 +62,20 @@ def bin_beta(M1500, beta, N_bins=20, mag_cut=-16):
             beta_mean.append(np.nan)
             beta_std.append(np.nan)
 
-    return bin_centers, np.array(beta_mean), np.array(beta_std)
+    # Convert to arrays
+    bin_centers = np.array(bin_centers)
+    beta_mean = np.array(beta_mean)
+    beta_std = np.array(beta_std)
+    bin_count = np.array(bin_count)
+
+    # Filter bins with fewer than min_count galaxies
+    mask_valid = bin_count >= min_count
+    bin_centers = bin_centers[mask_valid]
+    beta_mean = beta_mean[mask_valid]
+    beta_std = beta_std[mask_valid]
+    bin_count = bin_count[mask_valid]
+
+    return bin_centers, beta_mean, beta_std, bin_count
 
 def get_binned_beta(obj, bands, wavelengths, N_bins=10, mag_cut=-16, nodust=False):
     """Compute binned beta for a Caesar object."""
@@ -68,4 +89,46 @@ def get_binned_beta(obj, bands, wavelengths, N_bins=10, mag_cut=-16, nodust=Fals
     
     return bin_beta(M1500, beta, N_bins=N_bins, mag_cut=mag_cut)
 
- 
+def linear_regression_fit(bin_centers, beta_mean, beta_std=None):
+    """
+    Perform weighted linear regression on binned data and return slope/intercept and fitted line.
+    
+    Parameters:
+        bin_centers : array-like
+            Independent variable (x)
+        beta_mean : array-like
+            Dependent variable (y)
+        beta_std : array-like, optional
+            Standard deviations for weights (weighted regression)
+    
+    Returns:
+        slope, intercept : float
+        x_fit, y_fit : arrays for plotting fitted line
+    """
+    # --- Weights ---
+    if beta_std is not None:
+        mask = (~np.isnan(beta_std)) & (beta_std > 0)
+        bin_centers = bin_centers[mask]
+        beta_mean = beta_mean[mask]
+        beta_std = beta_std[mask]
+        w = 1 / beta_std**2
+    else:
+        w = None
+    
+    # --- Fit model ---
+    X = sm.add_constant(bin_centers)
+    model = sm.WLS(beta_mean, X, weights=w).fit()
+    
+    print(model.summary())
+
+    # --- Extract parameters ---
+    intercept = model.params[0]
+    slope = model.params[1]
+    
+    # --- Prepare smooth line for plotting ---
+    x_min, x_max = bin_centers.min(), bin_centers.max()
+    x_fit = np.linspace(x_min, x_max, 200)
+    X_fit = sm.add_constant(x_fit)
+    y_fit = model.predict(X_fit)
+    
+    return slope, intercept, x_fit, y_fit 

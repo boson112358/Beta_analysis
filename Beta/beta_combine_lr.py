@@ -1,0 +1,63 @@
+import numpy as np
+import caesar
+import unyt
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+from beta_utils import *
+
+# Get the input caesar file
+infile = '/cosma8/data/dp376/dc-xian3/simba-eor/EoRData/CaesarFile/m25n1024/caesar_m25n1024_036.hdf5'
+infile_m50 = '/cosma8/data/dp376/dc-xian3/simba-eor/EoRData/CaesarFile/m50n1024/caesar_m50n1024_036.hdf5'
+
+# Load caesar file
+obj = caesar.load(infile)
+obj_m50 = caesar.load(infile_m50)
+
+# Redshift
+Z = obj.simulation.redshift
+
+# Get UV magnitude
+bands = ["i1500", "i2300", "i2800"]
+wavelengths = np.array([1500, 2300, 2800])
+
+# --- Load magnitudes for dust ---
+mags_m25 = np.array([[g.absmag[band] for g in obj.galaxies] for band in bands])
+mags_m50 = np.array([[g.absmag[band] for g in obj_m50.galaxies] for band in bands])
+
+# --- Apply magnitude cuts ---
+mask_m25 = mags_m25[0] < -16       # only keep galaxies with M1500 < -16
+mask_m50 = mags_m50[0] < -17.5     # only keep galaxies with M1500 < -17.5
+
+mags_m25_cut = mags_m25[:, mask_m25]
+mags_m50_cut = mags_m50[:, mask_m50]
+
+# --- Combine the two boxes ---
+mags_combined = np.concatenate([mags_m25_cut, mags_m50_cut], axis=1)
+
+# --- Compute beta ---
+beta_combined = Calbeta(mags_combined, wavelengths)
+M1500_combined = mags_combined[0]
+
+# --- Bin beta ---
+bin_centers, beta_mean, beta_std = bin_beta(M1500_combined, beta_combined, N_bins=10, mag_cut=-16)
+
+# --- Linear Regression ---
+slope, intercept, x_fit, y_fit = linear_regression_fit(bin_centers, beta_mean, beta_std)
+
+# Optional: round for nicer display
+slope_rounded = round(slope, 3)
+intercept_rounded = round(intercept, 3)
+
+# --- Plot ---
+plt.figure(figsize=(6,4))
+plt.errorbar(bin_centers, beta_mean, yerr=beta_std,
+             color='green', linestyle='-', marker='o', label='m25 + m50 dust')
+plt.plot(x_fit, y_fit, label=f"y = {slope_rounded}x + {intercept_rounded}")
+plt.xlabel("M1500")
+plt.ylabel("Beta")
+plt.ylim(-2.6, -0.8)
+plt.xlim(-23, -15)
+plt.text(-22, -1, f"z = {round(Z)}", fontsize=12)
+plt.legend()
+plt.tight_layout()
+plt.savefig("Beta_combined_lr.png")

@@ -1,0 +1,20 @@
+Dataset 1: Individual galaxies table 1 from:
+Discovery of red galaxy candidates at z ~ 12: Early dust growth or significant nebular emission with high-temperature stars?
+
+Dataset 2: Individual galaxies table 1 from:
+The ultraviolet continuum slopes (β) of galaxies at z ~ 8–16 from JWST
+and ground-based near-infrared imaging
+
+Dataset 3: Multiple binned observations table 2 from: 
+The UV continuum slopes of early star-forming galaxies in JADES
+
+Dataset 4: Individual galaxies table 1 from:
+The ultraviolet continuum slopes of high-redshift galaxies: evidence for the emergence of dust-free stellar populations at z > 10
+### You do not need this dataset, I mention it here because the numbering goes weird. All galaxies in
+this dataset are in dataset 2.
+
+Dataset 5: Exerpt of the 10 example on the upper part of table 3 from:
+Physical properties of galaxies and the UV Luminosity Function from z ∼ 6 to z ∼ 14 in COSMOS-We
+Note that they should have many more as they mention their sample size in table 2. They also have some higher redshift which I did not add yet.
+
+ 
