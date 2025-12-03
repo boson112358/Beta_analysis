@@ -1,0 +1,62 @@
+###############################################################################
+# EOR / Astrophysics Publication Style (COSMA-compatible, matplotlib ≥3.1)
+###############################################################################
+
+# Figure layout
+figure.figsize: 4.0, 3.5
+figure.dpi: 300
+figure.autolayout: True
+figure.facecolor: white
+axes.facecolor: white
+
+# Font / Text
+font.family: serif
+font.serif: DejaVu Serif
+font.size: 10
+text.usetex: False
+mathtext.fontset: cm
+axes.unicode_minus: True
+
+# Axes
+axes.labelsize: 10
+axes.titlesize: 11
+axes.linewidth: 1.0
+axes.grid: True
+axes.grid.which: both
+
+# Grid (valid hex colors)
+# axes.grid.color: #d0d0d0
+#axes.grid.linestyle: --
+#axes.grid.linewidth: 0.5
+
+# Ticks
+xtick.major.size: 4
+xtick.major.width: 1
+ytick.major.size: 4
+ytick.major.width: 1
+xtick.direction: in
+ytick.direction: in
+xtick.minor.visible: True
+ytick.minor.visible: True
+xtick.minor.size: 2
+ytick.minor.size: 2
+
+# Lines & markers
+lines.linewidth: 1.2
+lines.markersize: 5
+lines.markeredgewidth: 0.5
+
+# Color cycle (correct syntax)
+# axes.prop_cycle: cycler('color', ['#1f77b4', '#d62728', '#2ca02c', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'])
+
+# Legends
+legend.fontsize: 9
+legend.frameon: False
+legend.handlelength: 2
+
+# Saving figures
+savefig.dpi: 300
+savefig.bbox: tight
+savefig.format: png
+savefig.transparent: True
+
