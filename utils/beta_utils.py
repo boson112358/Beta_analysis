@@ -174,6 +174,54 @@ def bin_xy(x_values, y_values, mask_values=None, mask_cut=None,
             y_std[valid],
             bin_count[valid])
 
+def bin_xy_median(x_values, y_values, mask_values=None, mask_cut=None,
+                  N_bins=20, min_count=10):
+    """
+    Bin galaxies by x_values and compute median and IQR of y_values.
+    Optional mask based on mask_values < mask_cut.
+    Returns all bins plus a low-count mask (< min_count).
+    """
+    x_values = np.array(x_values)
+    y_values = np.array(y_values)
+
+    # ---- Apply mask if provided ----
+    if mask_values is not None and mask_cut is not None:
+        mask_values = np.array(mask_values)
+        keep = mask_values < mask_cut
+        x_values = x_values[keep]
+        y_values = y_values[keep]
+
+    # ---- Define bins ----
+    bins = np.linspace(x_values.min(), x_values.max(), N_bins + 1)
+    bin_centers = 0.5 * (bins[:-1] + bins[1:])
+    bin_index = np.digitize(x_values, bins)
+
+    y_med, y_iqr, bin_count = [], [], []
+
+    for i in range(1, N_bins + 1):
+        in_bin = y_values[bin_index == i]
+        bin_count.append(len(in_bin))
+
+        if len(in_bin) > 0:
+            med = np.median(in_bin)
+            q25, q75 = np.percentile(in_bin, [25, 75])
+            y_med.append(med)
+            y_iqr.append(q75 - q25)
+        else:
+            y_med.append(np.nan)
+            y_iqr.append(np.nan)
+
+    # Convert to arrays
+    bin_centers = np.array(bin_centers)
+    y_med = np.array(y_med)
+    y_iqr = np.array(y_iqr)
+    bin_count = np.array(bin_count)
+
+    # low-count mask
+    low_count_mask = bin_count < min_count
+
+    return bin_centers, y_med, y_iqr, bin_count, low_count_mask
+
 
 def linear_regression_fit(bin_centers, beta_mean, beta_std=None):
     """

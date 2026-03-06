@@ -62,8 +62,8 @@ for z_str in redshifts:
         stellar_mass_m50 = np.array([g.masses['stellar'] for g in obj_m50.galaxies])
         
         # Apply magnitude cuts
-        mask_m25 = mags_m25[0] < -16
-        mask_m50 = mags_m50[0] < -17.5
+        mask_m25 = mags_m25[0] < -17
+        mask_m50 = mags_m50[0] < -18.5
         
         mags_combined = np.concatenate([mags_m25[:, mask_m25], mags_m50[:, mask_m50]], axis=1)
         stellar_mass_combined = np.concatenate([stellar_mass_m25[mask_m25], stellar_mass_m50[mask_m50]])
@@ -77,6 +77,7 @@ for z_str in redshifts:
         
         # Mass-weighted mean
         beta_mean_mass = np.average(beta_combined, weights=stellar_mass_combined)
+        #beta_mean_mass = np.median(beta_combined)
         beta_std_mass  = np.sqrt(np.average((beta_combined - beta_mean_mass)**2, weights=stellar_mass_combined))
         
         Ngal = mags_combined.shape[1]
@@ -106,7 +107,7 @@ for j, law in enumerate(dust_laws):
     slope, intercept = np.polyfit(zvals, beta_vals, 1, w=weights)
     
     # Monte Carlo for slope uncertainty
-    Nmc = 1000
+    Nmc = 2000
     slopes_mc = []
     for i in range(Nmc):
         beta_sample = beta_vals + np.random.normal(0, beta_errs)
