@@ -9,31 +9,36 @@ from utils.beta_utils import *
 # -------------------------------
 # Redshifts and dust laws
 # -------------------------------
-redshifts = ['016', '019', '022', '026', '030', '036']
-dust_laws = ['calzetti', 'salmon', 'smc']  # you can add any number of laws here
+redshifts = ['036']
+dust_laws = ['calzetti', 'salmon', 'smc', 'mix_calz_mw']  # you can add any number of laws here
 bands = ["i1500", "i2300", "i2800"]
 wavelengths = np.array([1500, 2300, 2800])
 
 # Assign colors for each dust law automatically
 color = plt.cm.Greens(0.7)  # 0.0–1.0 scales the shade
-linestyles = ['-', '-.', ':', '--']  # solid, dashed, dash-dot, dotted
+linestyles = [
+    '-',                 # solid
+    '-.',                # dash-dot
+    ':',                 # dotted
+    (0, (1, 1)),         # densely dotted
+    (0, (5, 2)),         # long dashes
+    (0, (3, 1, 1, 1)),   # dash-dot-dot
+    (0, (7, 3)),         # very long dash
+]
 
 # -------------------------------
 # Plot setup: 3x2 subplots
 # -------------------------------
-fig, axes = plt.subplots(3, 2, figsize=(12, 12), sharex=True, sharey=True)
-axes = axes.flatten()
+fig, axes = plt.subplots(1, 1, figsize=(6, 4), sharex=True, sharey=True)
+axes = np.atleast_1d(axes).flatten()   # make it list-like
 
 # -------------------------------
 # Observed datasets
 # -------------------------------
 datasets = [
-    {"name": "Cullen2023", "file": "/cosma8/data/dp376/dc-xian3/simba-eor/Beta_analysis/analysis/Beta/Beta_obs/Cullen2023.csv"},
     {"name": "Topping2024", "file": "/cosma8/data/dp376/dc-xian3/simba-eor/Beta_analysis/analysis/Beta/Beta_obs/Topping2024.csv"},
     {"name": "Nanayakkara2023", "file": "/cosma8/data/dp376/dc-xian3/simba-eor/Beta_analysis/analysis/Beta/Beta_obs/Nanayakkara2023.csv"},
-    {"name": "Mitsuhashi2025", "file": "/cosma8/data/dp376/dc-xian3/simba-eor/Beta_analysis/analysis/Beta/Beta_obs/Mitsuhashi2025.csv"},
     {"name": "Bouwens2014", "file": "/cosma8/data/dp376/dc-xian3/simba-eor/Beta_analysis/analysis/Beta/Beta_obs/Bouwens2014.csv"},
-    {"name": "Cullen2024", "file": "/cosma8/data/dp376/dc-xian3/simba-eor/Beta_analysis/analysis/Beta/Beta_obs/Cullen2024.csv"},
     {"name": "Bhatawdekar2021", "file": "/cosma8/data/dp376/dc-xian3/simba-eor/Beta_analysis/analysis/Beta/Beta_obs/Bhatawdekar2021.csv"},
     ]
 
@@ -145,7 +150,7 @@ for i, z in enumerate(redshifts):
     for data in obs_data:
         z_mask = data['zphot'].round() == round_z
         style = style_map.get(data['name'], {"marker": "o", "color": "black"})
-
+    
         ax.errorbar(
             data['MUV'][z_mask],
             data['Beta'][z_mask],
@@ -156,6 +161,7 @@ for i, z in enumerate(redshifts):
             alpha=0.7,
             label=data['name']
         )
+
     # Titles and labels
     ax.set_title(f"z = {round_z}", fontsize=12)
     ax.set_xlim(-23, -15)
@@ -170,5 +176,5 @@ for i, z in enumerate(redshifts):
 # Final layout and save
 # -------------------------------
 plt.tight_layout()
-plt.savefig("Beta_multiple_dust_laws_sfilter.png", dpi=300)
+plt.savefig("Beta_z6_dust_laws_sfilter.png", dpi=300)
 
