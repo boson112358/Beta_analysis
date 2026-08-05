@@ -183,8 +183,7 @@ for i, snap in enumerate(snapshots):
         # -----------------------------------------
         # Bin
         # -----------------------------------------
-
-        bin_centers, beta_mean, beta_std, count = bin_xy(
+        bin_centers, beta_median, beta_p16, beta_p84, count = bin_xy_median(
             x_values=logAv,
             y_values=beta,
             mask_values=None,
@@ -192,16 +191,16 @@ for i, snap in enumerate(snapshots):
             N_bins=10
         )
 
-
-
         # -----------------------------------------
         # Plot
         # -----------------------------------------
-
         ax.errorbar(
             bin_centers,
-            beta_mean,
-            yerr=beta_std,
+            beta_median,
+            yerr=[
+                beta_median - beta_p16,   # lower error
+                beta_p84 - beta_median    # upper error
+            ],
             color=colors[dust],
             marker="o",
             linestyle="-",
@@ -210,8 +209,6 @@ for i, snap in enumerate(snapshots):
             capsize=2,
             label=dust if i == 0 else None
         )
-
-
 
     # =================================================
     # No dust case is removed

@@ -164,5 +164,5 @@ for i, z in enumerate(redshifts):
 # Final layout and save
 # -------------------------------
 plt.tight_layout()
-plt.savefig("Beta_multiple_dust_laws.png", dpi=300)
+plt.savefig("Beta_vs_Muv_DustComparison.png", dpi=300)
 

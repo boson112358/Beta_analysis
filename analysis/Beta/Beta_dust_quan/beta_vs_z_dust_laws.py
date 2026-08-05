@@ -79,7 +79,8 @@ results = {
         "z":[],
         "median":[],
         "p16":[],
-        "p84":[]
+        "p84":[],
+        "N": [],
 
     }
 
@@ -87,215 +88,103 @@ results = {
 
 }
 
-
-
 # ==================================================
-# Loop redshift
+# Loop over redshifts
 # ==================================================
 
 for snap in redshifts:
 
-
-    print("Processing snapshot:", snap)
-
-
-
-    # --------------------------------------------------
-    # Load NO-DUST selection files
-    # --------------------------------------------------
-
-    obj25_nodust = caesar.load(
-        template_m25.format(
-            snap,
-            "calzetti"
-        )
-    )
-
-
-    obj50_nodust = caesar.load(
-        template_m50.format(
-            snap,
-            "calzetti"
-        )
-    )
-
-
-    z = obj25_nodust.simulation.redshift
-
-
-
-    # --------------------------------------------------
-    # Define galaxy selection using intrinsic UV
-    # --------------------------------------------------
-
-    mags25_nodust = np.array(
-
-        [
-        [g.absmag_nodust[b]
-        for g in obj25_nodust.galaxies]
-
-        for b in bands
-
-        ]
-
-    )
-
-
-    mags50_nodust = np.array(
-
-        [
-        [g.absmag_nodust[b]
-        for g in obj50_nodust.galaxies]
-
-        for b in bands
-
-        ]
-
-    )
-
-
-    mask25 = mags25_nodust[0] < -16
-
-    mask50 = mags50_nodust[0] < -17.5
-
-
-
-    # ==================================================
-    # Loop dust models
-    # ==================================================
+    print(f"\nProcessing snapshot {snap}")
 
     for law in dust_laws:
 
+        print(f"   {law}")
 
-        print("  ", law)
-
-
-
-        # ------------------------------------------------
-        # Load corresponding dust file
-        # ------------------------------------------------
-
+        # --------------------------------------------
+        # Load catalogue
+        # --------------------------------------------
         if law == "nodust":
 
-            obj25 = obj25_nodust
-            obj50 = obj50_nodust
+            obj25 = caesar.load(
+                template_m25.format(snap, "calzetti")
+            )
 
-
-            mags25 = mags25_nodust
-
-            mags50 = mags50_nodust
-
-
+            obj50 = caesar.load(
+                template_m50.format(snap, "calzetti")
+            )
 
         else:
 
-
             obj25 = caesar.load(
-                template_m25.format(
-                    snap,
-                    law
-                )
+                template_m25.format(snap, law)
             )
-
 
             obj50 = caesar.load(
-                template_m50.format(
-                    snap,
-                    law
-                )
+                template_m50.format(snap, law)
             )
 
+        z = obj25.simulation.redshift
 
+        # --------------------------------------------
+        # Read magnitudes
+        # --------------------------------------------
+        if law == "nodust":
 
-            mags25 = np.array(
-
-                [
-                [g.absmag[b]
-                for g in obj25.galaxies]
-
+            mags25 = np.array([
+                [g.absmag_nodust[b] for g in obj25.galaxies]
                 for b in bands
+            ])
 
-                ]
-
-            )
-
-
-            mags50 = np.array(
-
-                [
-                [g.absmag[b]
-                for g in obj50.galaxies]
-
+            mags50 = np.array([
+                [g.absmag_nodust[b] for g in obj50.galaxies]
                 for b in bands
+            ])
 
-                ]
+        else:
 
-            )
+            mags25 = np.array([
+                [g.absmag[b] for g in obj25.galaxies]
+                for b in bands
+            ])
 
+            mags50 = np.array([
+                [g.absmag[b] for g in obj50.galaxies]
+                for b in bands
+            ])
 
+        # --------------------------------------------
+        # Magnitude cuts (OBSERVED UV)
+        # --------------------------------------------
+        mask25 = mags25[0] < -16
+        mask50 = mags50[0] < -17.5
 
-        # ------------------------------------------------
-        # Apply identical intrinsic selection
-        # ------------------------------------------------
-
+        # --------------------------------------------
+        # Combine galaxies
+        # --------------------------------------------
         mags_combined = np.concatenate(
-
-            [
-
-            mags25[:,mask25],
-
-            mags50[:,mask50]
-
-            ],
-
-            axis=1
-
+            (
+                mags25[:, mask25],
+                mags50[:, mask50],
+            ),
+            axis=1,
         )
-
-
 
         if mags_combined.shape[1] == 0:
             continue
 
-
-
-        # ------------------------------------------------
-        # beta
-        # ------------------------------------------------
-
+        # --------------------------------------------
+        # Calculate beta
+        # --------------------------------------------
         beta = Calbeta(
-
             mags_combined,
-
             wavelengths
-
         )
-
-
-        median = np.median(beta)
-
-
-        p16 = np.percentile(
-            beta,
-            16
-        )
-
-
-        p84 = np.percentile(
-            beta,
-            84
-        )
-
-
 
         results[law]["z"].append(z)
-
-        results[law]["median"].append(median)
-
-        results[law]["p16"].append(p16)
-
-        results[law]["p84"].append(p84)
-
+        results[law]["median"].append(np.median(beta))
+        results[law]["p16"].append(np.percentile(beta, 16))
+        results[law]["p84"].append(np.percentile(beta, 84))
+        results[law]["N"].append(len(beta))
 
 
 # ==================================================

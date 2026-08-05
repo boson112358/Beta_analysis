@@ -173,7 +173,7 @@ def bin_xy(x_values, y_values, mask_values=None, mask_cut=None,
             y_mean[valid],
             y_std[valid],
             bin_count[valid])
-
+'''
 def bin_xy_median(x_values, y_values, mask_values=None, mask_cut=None,
                   N_bins=20, min_count=10):
     """
@@ -221,7 +221,81 @@ def bin_xy_median(x_values, y_values, mask_values=None, mask_cut=None,
     low_count_mask = bin_count < min_count
 
     return bin_centers, y_med, y_iqr, bin_count, low_count_mask
+'''
 
+def bin_xy_median(x_values, y_values, mask_values=None, mask_cut=None,
+                  N_bins=20, min_count=10):
+    """
+    Bin galaxies by x_values and compute the median and the
+    16th/84th percentiles of y_values.
+
+    Optional mask based on mask_values < mask_cut.
+
+    Returns
+    -------
+    bin_centers : array
+        Center of each valid x-bin.
+    y_median : array
+        Median y-value in each bin.
+    y_p16 : array
+        16th percentile in each bin.
+    y_p84 : array
+        84th percentile in each bin.
+    bin_count : array
+        Number of galaxies in each bin.
+    """
+
+    x_values = np.asarray(x_values)
+    y_values = np.asarray(y_values)
+
+    # ---- Apply mask if provided ----
+    if mask_values is not None and mask_cut is not None:
+        mask_values = np.asarray(mask_values)
+        keep = mask_values < mask_cut
+        x_values = x_values[keep]
+        y_values = y_values[keep]
+
+    # ---- Define bins on x ----
+    bins = np.linspace(x_values.min(), x_values.max(), N_bins + 1)
+    bin_centers = 0.5 * (bins[:-1] + bins[1:])
+    bin_index = np.digitize(x_values, bins)
+
+    y_median = []
+    y_p16 = []
+    y_p84 = []
+    bin_count = []
+
+    for i in range(1, N_bins + 1):
+        in_bin = y_values[bin_index == i]
+        bin_count.append(len(in_bin))
+
+        if len(in_bin) > 0:
+            y_median.append(np.median(in_bin))
+            p16, p84 = np.percentile(in_bin, [16, 84])
+            y_p16.append(p16)
+            y_p84.append(p84)
+        else:
+            y_median.append(np.nan)
+            y_p16.append(np.nan)
+            y_p84.append(np.nan)
+
+    # Convert to arrays
+    bin_centers = np.array(bin_centers)
+    y_median = np.array(y_median)
+    y_p16 = np.array(y_p16)
+    y_p84 = np.array(y_p84)
+    bin_count = np.array(bin_count)
+
+    # ---- Min-count filtering ----
+    valid = bin_count >= min_count
+
+    return (
+        bin_centers[valid],
+        y_median[valid],
+        y_p16[valid],
+        y_p84[valid],
+        bin_count[valid],
+    )
 
 def linear_regression_fit(bin_centers, beta_mean, beta_std=None):
     """
