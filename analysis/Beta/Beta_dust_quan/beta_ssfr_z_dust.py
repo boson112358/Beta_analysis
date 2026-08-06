@@ -159,16 +159,15 @@ for i, snap in enumerate(snapshots):
 
 
         # -------------------------
-        # Bin
+        # Bin (median)
         # -------------------------
-        bin_centers, beta_mean, beta_std, bin_count = bin_xy(
+        bin_centers, beta_median, beta_p16, beta_p84, bin_count = bin_xy_median(
             x_values=log_ssfr,
             y_values=beta_combined,
             mask_values=None,
             mask_cut=None,
             N_bins=10
         )
-
 
         # -------------------------
         # Plot
@@ -179,10 +178,14 @@ for i, snap in enumerate(snapshots):
             np.min(log_ssfr),
             np.max(log_ssfr)
         )
+
         ax.errorbar(
             bin_centers,
-            beta_mean,
-            yerr=beta_std,
+            beta_median,
+            yerr=[
+                beta_median - beta_p16,
+                beta_p84 - beta_median
+            ],
             color=colors[dust],
             marker='o',
             linestyle='-',
@@ -191,7 +194,6 @@ for i, snap in enumerate(snapshots):
             markersize=5,
             label=dust if i == 0 else None
         )
-
 
     # ==========================
     # No dust case
@@ -259,8 +261,7 @@ for i, snap in enumerate(snapshots):
 
     log_ssfr = np.log10(ssfr_combined)
 
-
-    bin_centers_nodust, beta_mean_nodust, beta_std_nodust, _ = bin_xy(
+    bin_centers_nodust, beta_median_nodust, beta_p16_nodust, beta_p84_nodust, _ = bin_xy_median(
         x_values=log_ssfr,
         y_values=beta_nodust,
         mask_values=None,
@@ -268,11 +269,13 @@ for i, snap in enumerate(snapshots):
         N_bins=10
     )
 
-
     ax.errorbar(
         bin_centers_nodust,
-        beta_mean_nodust,
-        yerr=beta_std_nodust,
+        beta_median_nodust,
+        yerr=[
+            beta_median_nodust - beta_p16_nodust,
+            beta_p84_nodust - beta_median_nodust
+        ],
         color="black",
         marker='s',
         linestyle='--',
@@ -281,7 +284,6 @@ for i, snap in enumerate(snapshots):
         markersize=5,
         label="no dust" if i == 0 else None
     )
-
 
     # ----------------------------------
     # Formatting

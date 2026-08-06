@@ -100,14 +100,32 @@ for i, z in enumerate(redshifts):
         M1500_combined = mags_combined[0]
 
         # Bin beta
-        bin_centers, beta_mean, beta_std, _ = bin_beta(M1500_combined, beta_combined, N_bins=6, mag_cut=-16, min_count=5)
+        #bin_centers, beta_mean, beta_std, _ = bin_beta(M1500_combined, beta_combined, N_bins=6, mag_cut=-16, min_count=5)
 
         # Plot
         #ax.errorbar(bin_centers, beta_mean, yerr=beta_std, color=color, marker='o', linestyle=linestyles[j], label=law)
-        ax.plot(bin_centers, beta_mean,
-        color=color,
-        linestyle=linestyles[law],
-        label=law)
+        #ax.plot(bin_centers, beta_mean,
+        #color=color,
+        #linestyle=linestyles[law],
+        #label=law)
+        # Bin beta using the median
+        bin_centers, beta_median, beta_p16, beta_p84, _ = bin_xy_median(
+            x_values=M1500_combined,
+            y_values=beta_combined,
+            mask_values=None,
+            mask_cut=None,
+            N_bins=6,
+            min_count=5
+        )
+
+        # Plot median only
+        ax.plot(
+            bin_centers,
+            beta_median,
+            color=color,
+            linestyle=linestyles[law],
+            label=law
+        )
 
     # Plot nodust line
     # Extract no-dust magnitudes
@@ -126,14 +144,33 @@ for i, z in enumerate(redshifts):
     M1500_nd = mags_nd_combined[0]
 
     # Bin beta vs M1500 (no dust)
-    bin_centers_nd, beta_mean_nd, beta_std_nd, _ = bin_beta(
-        M1500_nd, beta_nd, N_bins=6, mag_cut=-16, min_count=5
+    #bin_centers_nd, beta_mean_nd, beta_std_nd, _ = bin_beta(
+    #    M1500_nd, beta_nd, N_bins=6, mag_cut=-16, min_count=5
+    #)
+
+    #ax.plot(bin_centers_nd, beta_mean_nd,
+    #    color=color,
+    #    linestyle='--',
+    #    label='nodust')
+
+    # Bin beta using the median
+    bin_centers_nd, beta_median_nd, beta_p16_nd, beta_p84_nd, _ = bin_xy_median(
+        x_values=M1500_nd,
+        y_values=beta_nd,
+        mask_values=None,
+        mask_cut=None,
+        N_bins=6,
+        min_count=5
     )
 
-    ax.plot(bin_centers_nd, beta_mean_nd,
+    # Plot median only
+    ax.plot(
+        bin_centers_nd,
+        beta_median_nd,
         color=color,
         linestyle='--',
-        label='nodust')
+        label='nodust'
+    )
 
     # Plot observed datasets
     round_z = round(obj25.simulation.redshift)
