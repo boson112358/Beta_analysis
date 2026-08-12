@@ -25,6 +25,13 @@ print("\n========== Galaxy attributes ==========")
 
 attrs = dir(gal)
 
+print(gal)
+print(gal.__dict__.keys())
+print(dir(gal))
+print(gal.masses)
+print(gal.mass)
+print(gal.metallicities)
+
 for a in attrs:
     if not a.startswith("_"):
         print(a)
