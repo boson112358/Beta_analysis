@@ -87,8 +87,9 @@ sns.heatmap(
     corr,
     annot=True,
     fmt=".2f",
-    cmap="coolwarm",
-    center=0,
+    cmap="YlGnBu",
+    #cmap="coolwarm",
+    center=0.5,
     square=True
 )
 
