@@ -1,9 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 import caesar
-
-from pathlib import Path
 
 from utils.beta_utils import Calbeta
 
@@ -13,28 +10,11 @@ from utils.beta_utils import Calbeta
 # ============================================================
 
 plt.rcParams.update({
-    "font.family": "serif",
-    "font.serif": ["STIXGeneral", "Times New Roman", "DejaVu Serif"],
-    "mathtext.fontset": "stix",
-    "font.size": 8.5,
-    "axes.labelsize": 9,
-    "axes.linewidth": 0.8,
-    "xtick.labelsize": 8,
-    "ytick.labelsize": 8,
-    "xtick.direction": "in",
-    "ytick.direction": "in",
-    "xtick.top": True,
-    "ytick.right": True,
-    "xtick.minor.visible": True,
-    "ytick.minor.visible": True,
-    "xtick.major.size": 4,
-    "ytick.major.size": 4,
-    "xtick.minor.size": 2,
-    "ytick.minor.size": 2,
-    "legend.fontsize": 7.5,
-    "legend.frameon": False,
-    "axes.grid": False,
-    "savefig.dpi": 300,
+    "font.size": 12,
+    "axes.labelsize": 13,
+    "axes.titlesize": 13,
+    "legend.fontsize": 9,
+    "axes.grid": True,
 })
 
 
@@ -49,34 +29,15 @@ dust_law = "calzetti"
 bands = ["i1500", "i2300", "i2800"]
 wavelengths = np.array([1500, 2300, 2800])
 
-observation_file = Path(__file__).with_name(
-    "beta_redshift_binned.csv"
-)
-redshift_observations = pd.read_csv(observation_file)
-
-observation_markers = {
-    "Bouwens 2014": "s",
-    "Cullen 2024": "^",
-    "Morales 2024": "D",
-    "Napolitano 2026": "v",
-    "Whitler 2025": "p",
-    "Topping 2024": "X",
-}
-
-distribution_colours = [
-    "#0072B2", "#E69F00", "#009E73",
-    "#D55E00", "#CC79A7", "#56B4E9",
-]
-
 template_m25 = (
     "/cosma8/data/dp376/dc-xian3/simba-eor/"
-    "EoRData/FullSpectra_Fit/m25n1024/"
+    "EoRData/Dust_extin/m25n1024/"
     "caesar_m25n1024_{}_{}.hdf5"
 )
 
 template_m50 = (
     "/cosma8/data/dp376/dc-xian3/simba-eor/"
-    "EoRData/FullSpectra_Fit/m50n1024/"
+    "EoRData/Dust_extin/m50n1024/"
     "caesar_m50n1024_{}_{}.hdf5"
 )
 
@@ -93,6 +54,7 @@ beta_upper = []
 
 # Store beta distribution at each redshift
 beta_distributions = []
+
 
 # ============================================================
 # Loop over snapshots
@@ -129,6 +91,21 @@ for z_str in redshifts:
     mags_m50 = np.array([
         [g.absmag[band] for g in obj_m50.galaxies]
         for band in bands
+    ])
+
+
+    # --------------------------------------------------------
+    # Stellar mass
+    # --------------------------------------------------------
+
+    stellar_mass_m25 = np.array([
+        g.masses["stellar"]
+        for g in obj_m25.galaxies
+    ])
+
+    stellar_mass_m50 = np.array([
+        g.masses["stellar"]
+        for g in obj_m50.galaxies
     ])
 
 
@@ -216,65 +193,31 @@ beta_upper = np.array(beta_upper)
 
 fig, (ax1, ax2) = plt.subplots(
     1, 2,
-    figsize=(7.1, 3.15),
-    constrained_layout=True,
+    figsize=(13, 5.5)
 )
 
 
 # ============================================================
 # LEFT PANEL
-# Median beta evolution for the full sample
+# Median beta evolution
 # ============================================================
 
 ax1.errorbar(
     zvals,
     median_beta,
     yerr=[beta_lower, beta_upper],
-    fmt="o-",
-    color="black",
-    capsize=2.5,
-    elinewidth=1.0,
-    linewidth=1.8,
-    markersize=5.0,
-    markerfacecolor="black",
-    markeredgecolor="white",
-    markeredgewidth=0.6,
-    zorder=10,
-    label="All galaxies",
+    fmt='o-',
+    capsize=4,
+    linewidth=1.5,
+    markersize=6,
+    label="Median β"
 )
-
-# Observational measurements binned by redshift.
-for dataset, data in redshift_observations.groupby("dataset", sort=False):
-    ax1.errorbar(
-        data["redshift"],
-        data["beta"],
-        yerr=data["uncertainty"],
-        fmt=observation_markers.get(dataset, "o"),
-        linestyle="none",
-        color="0.40",
-        ecolor="0.72",
-        markerfacecolor="white",
-        markeredgecolor="0.40",
-        markeredgewidth=0.9,
-        markersize=4.5,
-        capsize=1.5,
-        elinewidth=0.7,
-        alpha=0.95,
-        zorder=5,
-        label=dataset,
-    )
 
 ax1.set_xlabel("Redshift")
-ax1.set_ylabel(r"UV slope, $\beta$")
-ax1.text(
-    0.03, 0.96, r"(a) Redshift evolution",
-    transform=ax1.transAxes, ha="left", va="top"
-)
+ax1.set_ylabel(r"UV slope $\beta$")
+ax1.set_title("β Evolution")
 
-ax1.legend(
-    loc="lower left", ncol=2, columnspacing=0.9,
-    handletextpad=0.4, borderaxespad=0.4,
-)
+ax1.legend()
 
 # Optional: reverse x-axis so cosmic time goes left -> right
 # (high z on left, low z on right)
@@ -297,31 +240,25 @@ bins = np.linspace(
 )
 
 
-for colour, z, beta in zip(
-    distribution_colours, zvals, beta_distributions
-):
+for z, beta in zip(zvals, beta_distributions):
 
     ax2.hist(
         beta,
         bins=bins,
         histtype='step',
-        color=colour,
-        linewidth=1.15,
+        linewidth=1.5,
         density=False,
         label=f"z = {z:.1f}"
     )
 
 
-ax2.set_xlabel(r"UV slope, $\beta$")
+ax2.set_xlabel(r"UV slope $\beta$")
 ax2.set_ylabel("Number of galaxies")
-ax2.text(
-    0.03, 0.96, r"(b) Distributions",
-    transform=ax2.transAxes, ha="left", va="top"
-)
+ax2.set_title("β Distribution")
 
 ax2.legend(
-    loc="upper right", ncol=2, columnspacing=0.8,
-    handlelength=1.7, borderaxespad=0.4,
+    fontsize=8,
+    ncol=2
 )
 
 
@@ -329,13 +266,11 @@ ax2.legend(
 # Final formatting
 # ============================================================
 
+plt.tight_layout()
+
 plt.savefig(
     "Beta_evolution_and_distribution_calzetti.png",
     dpi=300,
-    bbox_inches="tight"
-)
-plt.savefig(
-    "Beta_evolution_and_distribution_calzetti.pdf",
     bbox_inches="tight"
 )
 
