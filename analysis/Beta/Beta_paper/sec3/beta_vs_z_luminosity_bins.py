@@ -200,6 +200,47 @@ for colour, (_, _, label) in zip(colours, luminosity_bins):
     for z, n, med in zip(zvals, counts, median):
         print(f"  z = {z:.2f}: N = {n:5d}, median beta = {med:.3f}")
 
+    # --------------------------------------------------------
+    # Linear fit to the median-beta evolution in this bin
+    # --------------------------------------------------------
+
+    # Pivot at z = 6 so that the intercept is the fitted beta at z = 6.
+    # The fit is unweighted because the 16th--84th percentile interval
+    # measures galaxy-to-galaxy scatter rather than uncertainty on the median.
+    if np.count_nonzero(valid) >= 3:
+        z_pivot = 6.0
+        x_fit = zvals[valid] - z_pivot
+
+        (slope, beta_at_z6), covariance = np.polyfit(
+            x_fit,
+            median[valid],
+            deg=1,
+            cov=True,
+        )
+
+        slope_error = np.sqrt(covariance[0, 0])
+        beta_at_z6_error = np.sqrt(covariance[1, 1])
+
+        beta_fitted = slope * x_fit + beta_at_z6
+        ss_res = np.sum((median[valid] - beta_fitted) ** 2)
+        ss_tot = np.sum(
+            (median[valid] - np.mean(median[valid])) ** 2
+        )
+        r_squared = 1.0 - ss_res / ss_tot if ss_tot > 0 else np.nan
+
+        print("  Linear fit: beta(z) = beta_6 + slope * (z - 6)")
+        print(
+            f"    slope  = {slope:.4f} +/- {slope_error:.4f} "
+            "per unit redshift"
+        )
+        print(
+            f"    beta_6 = {beta_at_z6:.4f} +/- "
+            f"{beta_at_z6_error:.4f}"
+        )
+        print(f"    R^2    = {r_squared:.4f}")
+    else:
+        print("  Linear fit not calculated: fewer than three valid redshifts")
+
     # Use the corrected observational group membership directly. Marker shape
     # identifies the observational study; colour identifies the M_UV bin.
     obs_in_bin = luminosity_observations[

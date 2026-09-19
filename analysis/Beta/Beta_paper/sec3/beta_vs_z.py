@@ -211,6 +211,39 @@ beta_upper = np.array(beta_upper)
 
 
 # ============================================================
+# Linear fit to the simulated median-beta evolution
+# ============================================================
+
+# Pivoting at z = 6 makes the intercept physically meaningful and reduces
+# its covariance with the slope.  The fit is unweighted because the 16th--
+# 84th percentile range measures galaxy-to-galaxy scatter, not the error on
+# the median.  This fit is printed only; it is not added to the figure.
+z_pivot = 6.0
+x_fit = zvals - z_pivot
+
+(slope, beta_at_z6), covariance = np.polyfit(
+    x_fit,
+    median_beta,
+    deg=1,
+    cov=True,
+)
+
+slope_error = np.sqrt(covariance[0, 0])
+beta_at_z6_error = np.sqrt(covariance[1, 1])
+
+beta_fitted = slope * x_fit + beta_at_z6
+ss_res = np.sum((median_beta - beta_fitted) ** 2)
+ss_tot = np.sum((median_beta - np.mean(median_beta)) ** 2)
+r_squared = 1.0 - ss_res / ss_tot if ss_tot > 0 else np.nan
+
+print("\nLinear fit to the simulated median beta evolution:")
+print("  beta(z) = beta_6 + slope * (z - 6)")
+print(f"  slope  = {slope:.4f} +/- {slope_error:.4f} per unit redshift")
+print(f"  beta_6 = {beta_at_z6:.4f} +/- {beta_at_z6_error:.4f}")
+print(f"  R^2    = {r_squared:.4f}")
+
+
+# ============================================================
 # Create figure
 # ============================================================
 
