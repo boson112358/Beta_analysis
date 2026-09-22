@@ -31,6 +31,7 @@ print(dir(gal))
 print(gal.masses)
 print(gal.mass)
 print(gal.metallicities)
+print(gal.ages)
 
 for a in attrs:
     if not a.startswith("_"):
