@@ -31,9 +31,9 @@ plt.rcParams.update({
 dust_law = "calzetti"
 
 redshift_bins = [
-    (r"$6 \leq z \leq 7$", ["036", "030"]),
-    (r"$8 \leq z \leq 9$", ["026", "022"]),
-    (r"$10 \leq z \leq 11$", ["019", "016"]),
+    (r"$z \approx 6,\,7$", ["036", "030"]),
+    (r"$z \approx 8,\,9$", ["026", "022"]),
+    (r"$z \approx 10,\,11$", ["019", "016"]),
 ]
 
 # ------------------------------------------------
@@ -51,6 +51,11 @@ template_m50 = (
 
 bands = ["i1500", "i2300", "i2800"]
 wavelengths = np.array([1500, 2300, 2800])
+
+# Exclude the single extreme metallicity value that otherwise stretches the
+# equal-width bins in panel (c). This cut is applied only to the z~6--7
+# stellar-metallicity relation and does not affect the other panels.
+stellar_metallicity_max_z6_z7 = 0.7
 
 # Observational tables are expected in the same directory as this script.
 data_directory = Path(__file__).resolve().parent
@@ -83,7 +88,7 @@ property_settings = {
         "take_log": True,
     },
     "stellar_metallicity": {
-        "label": r"Stellar metallicity $Z_\star$",
+        "label": r"Stellar metallicity $Z_\star/Z_\odot$",
         "take_log": False,
     },
     "Av": {
@@ -105,9 +110,10 @@ def extract_properties(galaxies):
     ])
 
     stellar_metallicity = np.array([
-        g.metallicities["stellar"] for g in galaxies
+        g.metallicities["stellar"].to("Zsun").value
+        for g in galaxies
     ], dtype=float)
-
+    
     Av = np.array([
         g.absmag["v"] - g.absmag_nodust["v"]
         for g in galaxies
@@ -188,8 +194,8 @@ redshift_styles = [
 # ------------------------------------------------
 # Loop over redshift bins
 # ------------------------------------------------
-for (redshift_label, snapshots), style in zip(
-    redshift_bins, redshift_styles
+for redshift_index, ((redshift_label, snapshots), style) in enumerate(
+    zip(redshift_bins, redshift_styles)
 ):
     beta_samples = []
     property_samples = {
@@ -246,6 +252,18 @@ for (redshift_label, snapshots), style in zip(
         valid = np.isfinite(x_values) & np.isfinite(beta_combined)
         if settings["take_log"]:
             valid &= x_values > 0
+
+        if redshift_index == 0 and property_name == "stellar_metallicity":
+            metallicity_outlier = (
+                np.isfinite(x_values)
+                & (x_values >= stellar_metallicity_max_z6_z7)
+            )
+            print(
+                f"{redshift_label}, panel (c): excluded "
+                f"{np.count_nonzero(metallicity_outlier)} galaxy/galaxies "
+                f"with Z_star/Z_sun >= {stellar_metallicity_max_z6_z7}"
+            )
+            valid &= x_values < stellar_metallicity_max_z6_z7
 
         x_values = x_values[valid]
         beta_values = beta_combined[valid]
@@ -329,11 +347,11 @@ for ax, (_, settings), panel_label in zip(
 # Compact ranges matched to the plotted samples.
 axes[0].set_xlim(6.7, 10.15)
 axes[1].set_xlim(-9.55, -7.40)
-axes[2].set_xlim(0.0007, 0.0081)
+axes[2].set_xlim(0.05, 0.65)
 axes[3].set_xlim(0.0, 3.2)
 
 # Stellar metallicity is plotted linearly.
-axes[2].ticklabel_format(axis="x", style="sci", scilimits=(-2, 2))
+# axes[2].ticklabel_format(axis="x", style="sci", scilimits=(-2, 2))
 
 fig.text(
     0.018,

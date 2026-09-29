@@ -13,12 +13,12 @@ plt.rcParams.update({
     "font.family": "serif",
     "font.serif": ["Times New Roman", "Times", "STIXGeneral", "DejaVu Serif"],
     "mathtext.fontset": "stix",
-    "font.size": 8,
-    "axes.labelsize": 9,
-    "axes.linewidth": 0.8,
-    "xtick.labelsize": 8,
-    "ytick.labelsize": 8,
-    "legend.fontsize": 7.5,
+    "font.size": 10,
+    "axes.labelsize": 12,
+    "axes.linewidth": 1.0,
+    "xtick.labelsize": 10.5,
+    "ytick.labelsize": 10.5,
+    "legend.fontsize": 10.5,
     "xtick.direction": "in",
     "ytick.direction": "in",
     "xtick.top": True,
@@ -39,23 +39,23 @@ secondary_property = "stellar_metallicity"
 property_settings = {
     "stellar_metallicity": {
         "data_key": "log_stellar_metallicity",
-        "symbol": r"\log_{10}(Z_\star)",
-        "description": "log10 stellar metallicity",
-        "colourbar_label": r"Median stellar metallicity, $\log_{10}(Z_\star)$",
+        "symbol": r"\log_{10}(Z_\star/Z_\odot)",
+        "description": "log10 stellar metallicity [Zsun]",
+        "colourbar_label": r"$\log_{10}(Z_\star/Z_\odot)$",
         "file_tag": "StellarMetallicity",
     },
     "av": {
         "data_key": "av",
         "symbol": r"A_V",
         "description": "V-band attenuation A_V [mag]",
-        "colourbar_label": r"Median $V$-band attenuation, $A_V$ (mag)",
+        "colourbar_label": r"$A_V$ (mag)",
         "file_tag": "Av",
     },
     "ssfr": {
         "data_key": "log_ssfr",
         "symbol": r"\log_{10}(\mathrm{sSFR}/\mathrm{yr}^{-1})",
         "description": "log10 sSFR [yr^-1]",
-        "colourbar_label": r"Median $\log_{10}(\mathrm{sSFR}/\mathrm{yr}^{-1})$",
+        "colourbar_label": r"$\log_{10}(\mathrm{sSFR}/\mathrm{yr}^{-1})$",
         "file_tag": "sSFR",
     },
 }
@@ -118,7 +118,7 @@ def load_selected_galaxies(file_name, magnitude_limit):
     ])[selected]
 
     stellar_metallicity = np.array([
-        galaxy.metallicities["stellar"]
+        galaxy.metallicities["stellar"].to("Zsun").value
         for galaxy in obj.galaxies
     ], dtype=float)[selected]
 
@@ -392,7 +392,12 @@ print(
 # ================================================================
 # Single-panel figure
 # ================================================================
-fig, ax = plt.subplots(figsize=(7.1, 4.8))
+# MNRAS single-column figure: approximately 3.3--3.5 inches wide.
+# A near-square main panel is easier to read than a tall, narrow panel.
+fig, ax = plt.subplots(
+    figsize=(3.5, 4.2),
+    constrained_layout=True,
+)
 
 # A light subsample shows the underlying distribution without dominating it.
 rng = np.random.default_rng(random_seed)
@@ -513,10 +518,11 @@ for region in regions:
         zorder=5,
     )
 
-    # Report the median property and its 16th--84th percentile spread.
+    # Report only the numerical median and spread beside each point. The
+    # colour-bar label identifies the property, which avoids repeating a long
+    # equation four times in a narrow single-column figure.
     property_label = (
-        rf"${property_info['symbol']}="
-        rf"{region['property50']:.2f}"
+        rf"${region['property50']:.2f}"
         rf"^{{+{region['property84'] - region['property50']:.2f}}}"
         rf"_{{-{region['property50'] - region['property16']:.2f}}}$"
     )
@@ -538,7 +544,7 @@ for region in regions:
         textcoords="offset points",
         ha=horizontal_alignment,
         va=vertical_alignment,
-        fontsize=7.5,
+        fontsize=9.5,
         color="0.12",
         zorder=6,
     )
@@ -562,21 +568,26 @@ ax.tick_params(which="minor", length=2.2, width=0.6)
 # secondary property.
 mass_legend = [
     Line2D(
-        [0], [0], marker="o", linestyle="none", markersize=6.5,
+        [0], [0], marker="o", linestyle="none", markersize=7.5,
         markerfacecolor="0.45", markeredgecolor="white",
-        label=r"Lower-$M_\star$ half",
+        label=r"Lower-$M_\star$",
     ),
     Line2D(
-        [0], [0], marker="s", linestyle="none", markersize=6.5,
+        [0], [0], marker="s", linestyle="none", markersize=7.5,
         markerfacecolor="0.45", markeredgecolor="white",
-        label=r"Higher-$M_\star$ half",
+        label=r"Higher-$M_\star$",
     ),
 ]
 ax.legend(
     handles=mass_legend,
     frameon=False,
-    loc="upper left",
-    handletextpad=0.4,
+    loc="upper center",
+    bbox_to_anchor=(0.42, 1.0),
+    ncol=2,
+    columnspacing=1.2,
+    handletextpad=0.35,
+    borderaxespad=0.6,
+    fontsize=9.5,
 )
 
 scalar_mappable = plt.cm.ScalarMappable(norm=normalisation, cmap=cmap)
@@ -584,13 +595,22 @@ scalar_mappable.set_array([])
 colour_bar = fig.colorbar(
     scalar_mappable,
     ax=ax,
-    pad=0.02,
-    fraction=0.045,
+    orientation="horizontal",
+    pad=0.08,
+    fraction=0.055,
+    aspect=28,
 )
-colour_bar.set_label(property_info["colourbar_label"])
-colour_bar.ax.tick_params(direction="in", length=3.0, width=0.7)
-
-fig.subplots_adjust(left=0.11, right=0.90, bottom=0.13, top=0.97)
+colour_bar.set_label(
+    property_info["colourbar_label"],
+    fontsize=10.5,
+    labelpad=3,
+)
+colour_bar.ax.tick_params(
+    direction="in",
+    length=3.5,
+    width=0.8,
+    labelsize=9.5,
+)
 
 fig.savefig(
     f"Beta_vs_StellarMass_FourRegions_{property_info['file_tag']}.png",
