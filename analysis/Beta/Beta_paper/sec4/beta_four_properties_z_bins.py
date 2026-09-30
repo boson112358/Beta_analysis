@@ -40,12 +40,12 @@ redshift_bins = [
 # File templates
 # ------------------------------------------------
 template_m25 = (
-    "/cosma8/data/dp376/dc-xian3/simba-eor/EoRData/FullSpectra_Fit/"
+    "/home/zxiang/simba-eor/my_dustext_output_updated/"
     "m25n1024/caesar_m25n1024_{}_{}.hdf5"
 )
 
 template_m50 = (
-    "/cosma8/data/dp376/dc-xian3/simba-eor/EoRData/FullSpectra_Fit/"
+    "/home/zxiang/simba-eor/my_dustext_output_updated/"
     "m50n1024/caesar_m50n1024_{}_{}.hdf5"
 )
 
