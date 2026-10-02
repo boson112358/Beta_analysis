@@ -1,7 +1,10 @@
 # PNG images
 *.png
+*.pdf
 
 # Python cache files
 __pycache__/
 *.pyc
 
+.DS_Store
+._*
