@@ -1,0 +1,4 @@
+plot,x_quantity,y_quantity,dataset,point_type,x,y,y_err_lower,y_err_upper,n,redshift,M_UV,group,bin_range,binning_method
+beta_vs_dust_attenuation,A_V [mag],UV beta slope,Morales 2024,binned,0.10038461538461538,-2.5046153846153847,0.13954872322542458,0.13954872322542458,26,9.375,-18.145000000000003,,"(-0.001, 0.2]",mean beta of individual galaxies in 0.2 mag A_V bins (0-1.2); beta_std = scatter
+beta_vs_dust_attenuation,A_V [mag],UV beta slope,Morales 2024,binned,0.2925,-2.3200000000000003,0.21740898478827106,0.21740898478827106,4,10.045,-17.85,,"(0.2, 0.4]",mean beta of individual galaxies in 0.2 mag A_V bins (0-1.2); beta_std = scatter
+beta_vs_dust_attenuation,A_V [mag],UV beta slope,Morales 2024,binned,0.48666666666666664,-1.9733333333333334,0.030550504633038954,0.030550504633038954,3,8.8,-17.44,,"(0.4, 0.6]",mean beta of individual galaxies in 0.2 mag A_V bins (0-1.2); beta_std = scatter
