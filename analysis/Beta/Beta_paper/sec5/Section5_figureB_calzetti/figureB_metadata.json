@@ -1,0 +1,20 @@
+{
+  "input": "Section5_nebular_calzetti/matched_galaxies.csv",
+  "root": "/cosma8/data/dp376/dc-xian3/simba-eor/EoRData",
+  "nebular_dir": "FullSpectra_Fit",
+  "dust_law": "calzetti",
+  "output": "Section5_figureB_calzetti",
+  "threshold": -2.8,
+  "mass_tolerance": 0.1,
+  "metallicity_key": "stellar",
+  "age_key": "mass_weighted",
+  "metallicity_numeric": "mass_fraction",
+  "z_sun": 0.0134,
+  "age_numeric": "Gyr",
+  "n_input": 13446,
+  "n_invalid_properties": 0,
+  "n_pairs": 315,
+  "matching": "Nearest log mass within same box and snapshot; with replacement",
+  "stellar_age": "mass-weighted",
+  "metallicity_solar_mass_fraction": 0.0134
+}

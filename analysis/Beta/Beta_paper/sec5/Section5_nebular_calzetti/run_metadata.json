@@ -1,0 +1,41 @@
+{
+  "root": "/cosma8/data/dp376/dc-xian3/simba-eor/EoRData",
+  "nebular_dir": "FullSpectra_Fit",
+  "no_nebular_dir": "No_NebularEmi",
+  "dust_law": "calzetti",
+  "output": "Section5_nebular_calzetti",
+  "thresholds": [
+    -2.6,
+    -2.8,
+    -3.0
+  ],
+  "candidate_threshold": -2.8,
+  "delta_scale": "linear",
+  "selection": "Fixed observed i1500 from nebular-on, dust-attenuated catalogue",
+  "cuts": {
+    "m25n1024": -16.0,
+    "m50n1024": -17.5
+  },
+  "bands": [
+    "i1500",
+    "i2300",
+    "i2800"
+  ],
+  "wavelengths_angstrom": [
+    1500.0,
+    2300.0,
+    2800.0
+  ],
+  "n_used": 13446,
+  "n_delta_nonpositive": 1,
+  "weighting": "Unweighted pooled catalogue; not volume weighted",
+  "threshold_operator": "strictly less than",
+  "snapshots": {
+    "036": 6,
+    "030": 7,
+    "026": 8,
+    "022": 9,
+    "019": 10,
+    "016": 11
+  }
+}
