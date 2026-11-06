@@ -211,13 +211,41 @@ beta_upper = np.array(beta_upper)
 
 
 # ============================================================
+# Terminal summary (combined M25 + M50 sample after magnitude cuts)
+# ============================================================
+
+print("\nMedian UV slope at each redshift (Calzetti):")
+print(f"{'Redshift':>10} {'N galaxies':>12} {'Median beta':>14} {'16th percentile':>18} {'84th percentile':>18}")
+for i in np.argsort(zvals):
+    print(
+        f"{zvals[i]:10.3f} "
+        f"{len(beta_distributions[i]):12d} "
+        f"{median_beta[i]:14.4f} "
+        f"{median_beta[i] - beta_lower[i]:18.4f} "
+        f"{median_beta[i] + beta_upper[i]:18.4f}"
+    )
+
+
+# Pool every selected galaxy across all snapshots (not the redshift medians).
+combined_beta = np.concatenate(beta_distributions)
+combined_p16, combined_median, combined_p84 = np.percentile(
+    combined_beta, [16, 50, 84]
+)
+print("\nFull sample pooled across all redshifts (Calzetti):")
+print(f"  Redshift range: {np.min(zvals):.3f} to {np.max(zvals):.3f}")
+print(f"  Total number of galaxies: {combined_beta.size}")
+print(f"  Median beta: {combined_median:.4f}")
+print(f"  16th--84th percentiles: [{combined_p16:.4f}, {combined_p84:.4f}]")
+
+
+# ============================================================
 # Linear fit to the simulated median-beta evolution
 # ============================================================
 
 # Pivoting at z = 6 makes the intercept physically meaningful and reduces
 # its covariance with the slope.  The fit is unweighted because the 16th--
 # 84th percentile range measures galaxy-to-galaxy scatter, not the error on
-# the median.  This fit is printed only; it is not added to the figure.
+# the median.  The fitted slope and its uncertainty are shown in panel (a).
 z_pivot = 6.0
 x_fit = zvals - z_pivot
 
@@ -302,6 +330,16 @@ ax1.set_ylabel(r"UV slope, $\beta$")
 ax1.text(
     0.03, 0.96, r"(a) Redshift evolution",
     transform=ax1.transAxes, ha="left", va="top"
+)
+
+# Show the fitted slope with its 1-sigma covariance uncertainty.
+ax1.text(
+    0.97, 0.96,
+    rf"$\mathrm{{d}}\beta/\mathrm{{d}}z = {slope:.3f} \pm {slope_error:.3f}$",
+    transform=ax1.transAxes,
+    ha="right", va="top", fontsize=8,
+    bbox=dict(facecolor="white", edgecolor="none", alpha=0.85, pad=2.0),
+    zorder=20,
 )
 
 ax1.legend(

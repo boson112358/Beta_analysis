@@ -18,8 +18,8 @@ plt.rcParams.update({
     "font.family": "serif",
     "font.serif": ["STIXGeneral", "Times New Roman", "DejaVu Serif"],
     "mathtext.fontset": "stix",
-    "font.size": 8.5,
-    "axes.labelsize": 9,
+    "font.size": 8,
+    "axes.labelsize": 8.5,
     "axes.linewidth": 0.8,
     "xtick.labelsize": 8,
     "ytick.labelsize": 8,
@@ -33,10 +33,12 @@ plt.rcParams.update({
     "ytick.major.size": 4,
     "xtick.minor.size": 2,
     "ytick.minor.size": 2,
-    "legend.fontsize": 7.5,
+    "legend.fontsize": 6.5,
     "legend.frameon": False,
     "axes.grid": False,
-    "savefig.dpi": 300,
+    "savefig.dpi": 600,
+    "pdf.fonttype": 42,
+    "ps.fonttype": 42,
 })
 
 
@@ -166,9 +168,12 @@ for z_str in redshifts:
 
 zvals = np.asarray(zvals)
 fig, ax = plt.subplots(
-    figsize=(7.1, 4.0),
-    constrained_layout=True,
+    figsize=(3.54, 3.35),
 )
+
+# Fixed canvas width of 90 mm; all legends are inside the axes.
+fig.subplots_adjust(left=0.16, right=0.98, bottom=0.15, top=0.98)
+fit_labels = []
 
 colours = ["#0072B2", "#009E73", "#D55E00"]
 
@@ -186,10 +191,10 @@ for colour, (_, _, label) in zip(colours, luminosity_bins):
         fmt="o-",
         color=colour,
         alpha=1.0,
-        capsize=2.5,
+        capsize=1.8,
         elinewidth=0.9,
-        linewidth=1.6,
-        markersize=5.0,
+        linewidth=1.1,
+        markersize=3.5,
         markeredgecolor="white",
         markeredgewidth=0.5,
         zorder=10,
@@ -219,6 +224,7 @@ for colour, (_, _, label) in zip(colours, luminosity_bins):
         )
 
         slope_error = np.sqrt(covariance[0, 0])
+        fit_labels.append(rf"${slope:+.3f} \pm {slope_error:.3f}$")
         beta_at_z6_error = np.sqrt(covariance[1, 1])
 
         beta_fitted = slope * x_fit + beta_at_z6
@@ -239,6 +245,7 @@ for colour, (_, _, label) in zip(colours, luminosity_bins):
         )
         print(f"    R^2    = {r_squared:.4f}")
     else:
+        fit_labels.append("Unavailable")
         print("  Linear fit not calculated: fewer than three valid redshifts")
 
     # Use the corrected observational group membership directly. Marker shape
@@ -259,7 +266,7 @@ for colour, (_, _, label) in zip(colours, luminosity_bins):
             markerfacecolor="white",
             markeredgecolor=colour,
             markeredgewidth=0.9,
-            markersize=5.0,
+            markersize=3.5,
             capsize=1.5,
             elinewidth=0.65,
             alpha=1.0,
@@ -268,19 +275,35 @@ for colour, (_, _, label) in zip(colours, luminosity_bins):
 
 ax.set_xlabel("Redshift")
 ax.set_ylabel(r"UV slope, $\beta$")
-ax.text(
-    0.02, 0.97, r"UV-luminosity dependence",
-    transform=ax.transAxes, ha="left", va="top"
-)
-
-# Keep luminosity-bin and observational-study labels in separate legends.
+# Reserve the upper part of the axes for aligned bin and fit annotations.
+# The percentile bars still show galaxy scatter; fit errors are 1-sigma
+# covariance errors of the unweighted fit to the snapshot medians.
+y_lower, y_upper = ax.get_ylim()
+# Leave a clear strip below all error bars for the observation legend.
+y_span = y_upper - y_lower
+ax.set_ylim(y_lower - 0.20 * y_span, y_upper + 0.38 * y_span)
+bin_handles = [
+    Line2D([0], [0], color=colour, marker="o", markersize=3,
+           linewidth=1.1, label=label)
+    for colour, (_, _, label) in zip(colours, luminosity_bins)
+]
 bin_legend = ax.legend(
-    loc="upper right",
-    title=r"Simulation: $M_{1500}$ bin",
-    handlelength=2.2,
-    borderaxespad=0.5,
+    handles=bin_handles, loc="upper left",
+    title="Luminosity bin", title_fontsize=6.5,
+    handlelength=1.2, handletextpad=0.4, labelspacing=0.4,
+    borderaxespad=0.45,
 )
 ax.add_artist(bin_legend)
+# Matching colours and row order associate each fitted slope with its bin.
+fit_handles = [Line2D([], [], linestyle="none", label=value)
+               for value in fit_labels]
+fit_legend = ax.legend(
+    handles=fit_handles, loc="upper right",
+    title=r"$\mathrm{d}\beta/\mathrm{d}z$", title_fontsize=6.5,
+    handlelength=0, handletextpad=0, labelspacing=0.4,
+    borderaxespad=0.45, labelcolor=colours,
+)
+ax.add_artist(fit_legend)
 
 observation_handles = [
     Line2D(
@@ -291,25 +314,29 @@ observation_handles = [
         markerfacecolor="white",
         markeredgecolor="0.35",
         markeredgewidth=0.9,
-        markersize=4.8,
+        markersize=3.5,
         label=dataset,
     )
     for dataset, marker in observation_markers.items()
 ]
 ax.legend(
     handles=observation_handles,
-    loc="lower left",
-    title="Observations",
-    borderaxespad=0.5,
+    loc="lower center",
+    bbox_to_anchor=(0.5, 0.015),
+    ncol=3,
+    fontsize=6,
+    handlelength=1.0,
+    handletextpad=0.3,
+    columnspacing=0.7,
+    borderaxespad=0,
 )
 
 plt.savefig(
     "Beta_evolution_luminosity_bins_calzetti.png",
-    dpi=300,
-    bbox_inches="tight",
+    dpi=600,
 )
 plt.savefig(
     "Beta_evolution_luminosity_bins_calzetti.pdf",
-    bbox_inches="tight",
+
 )
 plt.show()
