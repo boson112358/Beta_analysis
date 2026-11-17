@@ -274,7 +274,7 @@ for colour, (_, _, label) in zip(colours, luminosity_bins):
         )
 
 ax.set_xlabel("Redshift")
-ax.set_ylabel(r"UV slope, $\beta$")
+ax.set_ylabel(r"UV continuum slope $\beta$")
 # Reserve the upper part of the axes for aligned bin and fit annotations.
 # The percentile bars still show galaxy scatter; fit errors are 1-sigma
 # covariance errors of the unweighted fit to the snapshot medians.

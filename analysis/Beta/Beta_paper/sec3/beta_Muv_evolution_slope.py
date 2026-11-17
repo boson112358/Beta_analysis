@@ -332,8 +332,8 @@ for ax in axes[:3]:
 for ax in (axes[1], axes[2], axes[4]):
     ax.tick_params(labelleft=False)
 
-fig.supxlabel(r"Rest-frame UV absolute magnitude, $M_{1500}$", y=0.035)
-fig.supylabel(r"UV continuum slope, $\beta$", x=0.025)
+fig.supxlabel(r"Rest-frame UV absolute magnitude $M_{1500}$", y=0.035)
+fig.supylabel(r"UV continuum slope $\beta$", x=0.025)
 
 # One shared legend is cleaner and leaves the panels free for observational
 # points that may be added later.

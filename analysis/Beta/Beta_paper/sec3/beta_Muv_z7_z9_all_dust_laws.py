@@ -321,8 +321,8 @@ for index, panel in enumerate(PANELS):
 # The shared x-axis is labelled only on the lower panel.
 axes[0].tick_params(labelbottom=False)
 
-fig.supxlabel(r"Rest-frame UV absolute magnitude, $M_{1500}$", y=0.035)
-fig.supylabel(r"UV continuum slope, $\beta$", x=0.015)
+fig.supxlabel(r"Rest-frame UV absolute magnitude $M_{1500}$", y=0.035)
+fig.supylabel(r"UV continuum slope $\beta$", x=0.015)
 
 # One shared legend is cleaner and leaves the panels free for observational
 # points that may be added later.

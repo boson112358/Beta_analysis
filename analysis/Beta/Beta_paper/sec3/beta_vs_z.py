@@ -326,7 +326,7 @@ for dataset, data in redshift_observations.groupby("dataset", sort=False):
     )
 
 ax1.set_xlabel("Redshift")
-ax1.set_ylabel(r"UV slope, $\beta$")
+ax1.set_ylabel(r"UV continuum slope $\beta$")
 ax1.text(
     0.03, 0.96, r"(a) Redshift evolution",
     transform=ax1.transAxes, ha="left", va="top"
@@ -379,11 +379,11 @@ for colour, z, beta in zip(
         color=colour,
         linewidth=1.15,
         density=False,
-        label=f"z = {z:.1f}"
+        label=f"z = {z:.0f}"
     )
 
 
-ax2.set_xlabel(r"UV slope, $\beta$")
+ax2.set_xlabel(r"UV continuum slope $\beta$")
 ax2.set_ylabel("Number of galaxies")
 ax2.text(
     0.03, 0.96, r"(b) Distributions",
