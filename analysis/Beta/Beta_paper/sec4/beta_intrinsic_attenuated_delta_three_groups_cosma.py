@@ -177,7 +177,7 @@ axes_by_property = {}
 for group_name, properties in plot_groups:
     fig = plt.figure(figsize=(7.5, 4.5))
     outer = fig.add_gridspec(1, 2, left=0.10, right=0.98, bottom=0.14,
-                             top=0.80, wspace=0.10)
+                             top=0.90, wspace=0.10)
     for column, property_name in enumerate(properties):
         inner = outer[column].subgridspec(
             2, 1, height_ratios=main_to_delta_height, hspace=0.06)
@@ -339,7 +339,7 @@ fixed_xlim = {
 }
 for index, (property_name, settings) in enumerate(property_settings.items()):
     main, delta = main_axes[index], delta_axes[index]
-    main.set_ylabel("UV slope β")
+    main.set_ylabel("UV continuum slope β")
     delta.set_ylabel("Δβ")
     delta.set_xlabel(settings["label"])
     delta.axhline(0, color="0.65", linestyle=":", linewidth=0.65, zorder=0)
@@ -386,7 +386,7 @@ redshift_handles = [
 ]
 # NaN-position errorbar artists provide legend keys without visible data.
 quantity_handles = []
-for quantity, label in (("intrinsic", "Intrinsic β"), ("attenuated", "Attenuated β")):
+for quantity, label in (("intrinsic", r"Dust-free $\beta_{\mathrm{nodust}}$"), ("attenuated", r"Attenuated $\beta$")):
     handle = main_axes[0].errorbar(
         [np.nan], [np.nan], yerr=[1.0], color="0.20", linewidth=1.6,
         linestyle=intrinsic_linestyle if quantity == "intrinsic" else "-",
@@ -397,13 +397,23 @@ for quantity, label in (("intrinsic", "Intrinsic β"), ("attenuated", "Attenuate
         bar.set_linestyle(intrinsic_errorbar_linestyle if quantity == "intrinsic" else "solid")
     quantity_handles.append(handle)
 for group_name, properties, fig in group_figures:
-    fig.legend(handles=redshift_handles, frameon=False, ncol=3,
-               loc="upper center", bbox_to_anchor=(0.5, 0.995))
-    fig.legend(handles=quantity_handles, frameon=False, ncol=2,
-               handlelength=4.5, handletextpad=0.8, columnspacing=2.0,
-               loc="upper center", bbox_to_anchor=(0.5, 0.945))
-    fig.text(0.5, 0.865, "Lower panels: Δβ = attenuated β − intrinsic β",
-             ha="center", fontsize=8)
+    # Place the colour key in panel (a), below its panel label.
+    panel_a = axes_by_property[properties[0]][0]
+    panel_b = axes_by_property[properties[1]][0]
+    panel_a.legend(
+        handles=redshift_handles, frameon=False, ncol=1,
+        loc="upper left", bbox_to_anchor=(0.035, 0.85),
+        borderaxespad=0.0, handletextpad=0.6, labelspacing=0.35,
+    )
+    # The upper-right corner leaves the panel (b) label unobscured.
+    panel_b.legend(
+        handles=quantity_handles, frameon=False, ncol=1,
+        loc="upper right", bbox_to_anchor=(0.97, 0.97),
+        borderaxespad=0.0, handlelength=3.5, handletextpad=0.8,
+        labelspacing=0.45,
+    )
+    #fig.text(0.5, 0.945, "Lower panels: Δβ = attenuated β − intrinsic β",
+    #         ha="center", fontsize=8)
     output_stem = f"BetaIntrinsic_Attenuated_Delta_{group_name}_{dust_law.title()}"
     fig.savefig(output_stem + ".png", dpi=300, bbox_inches="tight")
     fig.savefig(output_stem + ".pdf", bbox_inches="tight")
